@@ -28,7 +28,7 @@ const cookieExtractor = (req) => {
 passport.use(
   new JwtStratery(
     {
-      secretOrKey: "mynameisvinodbahadurthatpayoutuber",
+      secretOrKey: process.env.SECRET,
       jwtFromRequest: cookieExtractor,
       jsonWebTokenOptions: {
         maxAge: "2d",
@@ -72,7 +72,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-mongoose.connect("mongodb+srv://rahul:rahul@rb.icbpz.mongodb.net/blog-api?retryWrites=true&w=majority", {
+mongoose.connect(process.env.MONGODB, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
   useCreateIndex: true,
