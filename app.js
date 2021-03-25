@@ -12,7 +12,7 @@ const blogRoutes = require("./Routes/blogRoutes");
 const userRoutes = require("./Routes/userRoutes");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cookieParser());
@@ -28,7 +28,7 @@ const cookieExtractor = (req) => {
 passport.use(
   new JwtStratery(
     {
-      secretOrKey: process.env.SECRET,
+      secretOrKey: "mynameisvinodbahadurthatpayoutuber",
       jwtFromRequest: cookieExtractor,
       jsonWebTokenOptions: {
         maxAge: "2d",
@@ -72,7 +72,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-mongoose.connect(process.env.MONGODB, {
+mongoose.connect("mongodb+srv://rahul:rahul@rb.icbpz.mongodb.net/blog-api?retryWrites=true&w=majority", {
   useUnifiedTopology: true,
   useNewUrlParser: true,
   useCreateIndex: true,
