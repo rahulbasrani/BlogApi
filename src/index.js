@@ -1,30 +1,83 @@
-require('dotenv').config();
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose');
-const port= process.env.PORT||3000;
+const express = require("express");
+const mongoose = require("mongoose");
+const passport = require("passport");
+const JwtStratery = require("passport-jwt").Strategy;
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+require("dotenv").config();
 
-const usersRouter = require('./routers/users')
-const authRouter = require('./routers/auth')
-const articlesRouter = require('./routers/articles')
-const commentsRouter = require('./routers/comments')
+const User = require("./models/user");
+
+const blogRoutes = require("./Routes/blogRoutes");
+const userRoutes = require("./Routes/userRoutes");
 
 const app = express();
-app.use(cors({
-  origin: '*'
-}))
+const PORT = process.env.PORT || 8080;
 
-app.use('/api', usersRouter)
-app.use('/api', authRouter)
-app.use('/api', articlesRouter)
-app.use('/api', commentsRouter)
+app.use(express.json());
+app.use(cookieParser());
 
-mongoose.connect(process.env.MONGOdb, {
-  useCreateIndex: true,
-  useNewUrlParser: true,
+const cookieExtractor = (req) => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies["token"];
+  }
+  return token;
+};
+
+passport.use(
+  new JwtStratery(
+    {
+      secretOrKey: process.env.SECRET,
+      jwtFromRequest: cookieExtractor,
+      jsonWebTokenOptions: {
+        maxAge: "2d",
+      },
+    },
+    async (jwt_payload, done) => {
+      try {
+        const user = await User.findOne({ _id: jwt_payload.id });
+        if (user) {
+          return done(null, user);
+        } else {
+          return done(null, false, { message: "User authentication failed" });
+        }
+      } catch (err) {
+        return done(err, false, { message: "User authentication failed" });
+      }
+    }
+  )
+);
+
+app.use(passport.initialize());
+
+app.get("/", (req, res, next) => {
+  res.json({
+    message: "Welcome to the Blog API",
+  });
+});
+
+app.use("/blogs", blogRoutes);
+app.use("/user", userRoutes);
+
+app.use((req, res, next) => {
+  res.status(400).json({
+    message: "Invalid Route",
+  });
+});
+
+app.use((err, req, res, next) => {
+  res.status(500).json({
+    error: err.message,
+  });
+});
+
+mongoose.connect(process.env.MONGODB, {
   useUnifiedTopology: true,
-})
+  useNewUrlParser: true,
+  useCreateIndex: true,
+});
+const connection = mongoose.connection;
+connection.on("error", console.error.bind(console, "Error Connecting to DB."));
 
-app.listen(3000,()=>{
-  console.log(`connection successful at port ${port}`);
-})
+app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));

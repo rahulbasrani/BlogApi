@@ -14,17 +14,13 @@ const userSchema = new Schema({
     unique: true,
     required: true,
   },
-  passwordHash: {
+  password: {
     type: String,
     required: true,
   },
   about: {
     type: String,
   },
-  following: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-  }]
 }, { timestamps: true })
 
 module.exports = model('User', userSchema)
